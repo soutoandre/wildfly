@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- JDBC Drivers module.xml file to configure your JDBC drivers-->
+
+<!-- Oracle example -->
+<module xmlns="urn:jboss:module:1.0" name="com.oracle.ojdbc7">
+  <resources>
+    <resource-root path="ojdbc7.jar"/>
+    <!-- Uncomment the next line if you are using the Character set jar-->
+    <!-- <resource-root path="orai18n.jar"/> -->
+  </resources>
+  <dependencies>
+    <module name="javax.api"/>
+    <module name="javax.transaction.api"/>
+  </dependencies>
+</module>

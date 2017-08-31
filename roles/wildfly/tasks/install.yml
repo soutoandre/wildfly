@@ -1,0 +1,66 @@
+---
+- name: Download Wildfly| Drivers JDBC MSSQL | MySQL | PostgreSQL
+  get_url: url={{ item }} dest=/tmp/driver
+  with_items:
+    - http://download.jboss.org/wildfly/10.1.0.Final/wildfly-10.1.0.Final.zip 
+    - https://download.microsoft.com/download/3/F/7/3F74A9B9-C5F0-43EA-A721-07DA590FD186/sqljdbc_6.2.1.0_enu.tar.gz 
+    - https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.43.tar.gz 
+    - https://jdbc.postgresql.org/download/postgresql-42.1.4.jar
+
+  tags:
+    - wildfly
+
+
+- name: Install java
+  yum: name=java-1.8.0-openjdk  state=present
+  tags:
+    - wildfly
+
+- name : Create Group Wildfly
+  group: name=wildfly  gid=1200 state=present
+ 
+  tags:
+    - wildfly
+
+- name: Create user wilfly
+  user: name=wildfly  shell=/bin/bash  uid=1200  group=wildfly state=present
+
+  tags:
+    - wildfly
+
+- name: Unzip Wildfly
+  unarchive: src=/tmp/wildfly-10.1.0.Final.zip dest=/dados/ remote_src=True owner=wildfly group=wildfly
+  tags:
+    - wildfly
+
+- name: Link wildfly
+  file: dest=/dados/wildfly  src=/dados/wildfly-10.1.0.Final  state=link force=yes
+  tags:
+    - wildfly
+
+- name:  Create directory for Jbdc for MSSQL
+  file:  path={{ wildfly_dir }}/modules/system/layers/base/{{ item.dir }}/{{ item.name }}  state=directory owner=wildfly group=wildfly
+  with_items:
+    - { name: 'microsoft', dir: 'com'  }
+    - { name: 'mysql',     dir: 'com'  }          
+    - { name: 'postgres',  dir: 'org'  }
+    - { name: 'oracle',    dir: 'com'  }
+
+  tags:
+    - wildfly
+
+- name: Unzip  jdbc drive MySQL | MSSQL
+  unarchive: src=/tmp/driver/{{ item }}  dest=/tmp/driver remote_src=True   owner=wildfly group=wildfly
+  with_items:
+    - mysql-connector-java-5.1.43.tar.gz
+    - sqljdbc_6.2.1.0_enu.tar.gz
+   
+  tags: 
+    - wildfly
+
+- name: Copy  standalone.xml
+  template: src=standalone.xml.j2 dest={{ wildfly_dir }}/standalone/configuration/standalone.xml owner=wildfly group=wildfly
+  tags:
+    - wildfly
+
+

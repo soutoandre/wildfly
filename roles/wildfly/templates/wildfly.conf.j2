@@ -1,0 +1,14 @@
+#Home wildfly
+WILDFLY_HOME={{ wildfly_dir }}
+
+# The configuration you want to run
+WILDFLY_CONFIG=standalone.xml
+
+# The mode you want to run
+WILDFLY_MODE=standalone
+
+# The address to bind to
+WILDFLY_BIND={{ ansible_default_ipv4.address }}
+
+# Create other instance on the same host
+WILDFLY_OFFSET="jboss.socket.binding.port-offset=0"

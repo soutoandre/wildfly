@@ -1,0 +1,12 @@
+---
+- name: Provision wildfly
+  hosts: "wildfly"
+  remote_user: ansible
+  roles: 
+      - common
+      - ntp-client 
+      - wildfly
+  environment:
+     http_proxy: "http://192.168.0.20:8080" 
+     https_proxy: "http://192.168.0.20:8080"
+     no_proxy: "127.0.0.1, localhost" 

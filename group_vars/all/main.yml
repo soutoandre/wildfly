@@ -1,0 +1,11 @@
+---
+wildfly_dir: /dados/wildfly
+wildfly_home: /dados/wildfly
+wildfly_user: wildfly
+enable_wildfly: false
+enable_wildfly_drivers: false
+wildfly_group: wildfly
+wildfly_management_users:
+        - { name: 'user01', password: '12qwaszx' }
+user: user01
+password: "{{ 12qwaszx }}"

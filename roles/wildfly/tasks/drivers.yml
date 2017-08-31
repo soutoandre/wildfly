@@ -1,0 +1,39 @@
+---
+- name: Move Driver jdbc Oracle
+  copy: src=ojdbc7.jar dest=/tmp/driver 
+  tags:
+    - wildfly
+
+- name: Install Drivers Oracle | MySQL | PostgreSQL | MSSQL
+  shell: >
+       {{ wildfly_dir }}/bin/jboss-cli.sh --controller={{ ansible_default_ipv4.address }}:9990 --connect --user={{ user }} --password={{ password }} --command="module add --name={{ item.name }} --resources=/tmp{{ item.source }} --dependencies=javax.api,javax.transaction.api"
+  with_items:
+    - { name: 'system.layers.base.org.postgresql',          source: '/driver/postgresql-42.1.4.jar' }
+    - { name: 'system.layers.base.com.microsoft.sqlserver', source: '/driver/sqljdbc_6.2/enu/mssql-jdbc-6.2.1.jre8.jar' }
+    - { name: 'system.layers.base.com.mysql',               source: '/driver/mysql-connector-java-5.1.43/mysql-connector-java-5.1.43-bin.jar' }
+    - { name: 'system.layers.base.com.oracle.ojdbc7',       source: '/driver/ojdbc7.jar' } 
+  tags:
+    - wildfly
+
+- name: Config Driver  Datasource
+
+  shell: >
+       {{ wildfly_dir }}/bin/jboss-cli.sh --controller={{ ansible_default_ipv4.address }}:9990 --connect --user={{ user }} --password={{ password }} --command="/subsystem=datasources/jdbc-driver={{ item.driver }}:add(driver-name={{ item.driver }},driver-module-name={{ item.locate }})"
+  with_items:
+    - { driver: 'postgresql-42.1.4', locate: 'system.layers.base.org.postgresql' }
+    - { driver: 'mssql-jdbc-6.2.1',  locate: 'system.layers.base.com.microsoft.sqlserver' }
+    - { driver: 'mysql-connector-5.1.43', locate: 'system.layers.base.com.mysql' } 
+    - { driver: 'ojdbc7',                 locate: 'system.layers.base.com.oracle.ojdbc7' }
+  tags:
+    - wildfly
+
+- name: Config Datasources 
+  shell: >
+       {{ wildfly_dir }}/bin/jboss-cli.sh  --controller={{ ansible_default_ipv4.address }}:9990 --connect --user={{ user }} --password={{ password }} --command="/subsystem=datasources/data-source={{item.dataname }}:add(jndi-name={{ item.jndi }},driver-name={{ item.name }},connection-url={{ item.url }},user-name={{ item.dbuser }},password={{ item.password }})" 
+  with_items:
+    - { dataname: 'oracle', jndi: 'java:/OracleDS', name: 'ojdbc7', url: 'jdbc:oracle:thin:@localhost:1521:orcalesid', dbuser: 'teste', password: '12qwaszx' } 
+    - { dataname: 'postgres', jndi: 'java:/PostgresDS', name: 'postgresql-42.1.4', url: 'jdbc:postgresql://localhost:5432/SEU_BD_AQUI', dbuser: 'teste', password: '12qwaszx' }
+    - { dataname: 'mssql', jndi: 'java:/MSSQLDS', name: 'mssql-jdbc-6.2.1', url: 'jdbc:sqlserver://localhost:1433;DatabaseName=MyDatabase', dbuser: 'teste', password: '12qwaszx' } 
+    - { dataname: 'mysql', jndi: 'java:/MySqlDS', name: 'mysql-connector-5.1.43', url: 'jdbc:mysql://localhost:3306/mysqldb', dbuser: 'teste', password: '12qwaszx' } 
+  tags:
+    - wildfly
